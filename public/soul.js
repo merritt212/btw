@@ -2,8 +2,9 @@
 // server.listen(3000, "0.0.0.0", () => {
 //     console.log("Server running on http://192.168.1.228:3000");
 // });
-const socket = io(); // Automatically connects to the correct server
+// const socket = io(); // Automatically connects to the correct server
 
+const socket = io("https://btw.up.railway.app");
 let signature = $("#signature");
 let toggle = $(".toggle");
 let close = $("#close");
@@ -192,30 +193,43 @@ function makeDraggable(el) {
 	let openedDesktopWindows = new Set(); // Track opened Desktop folder windows
 
 	// Handle double-click on Desktop icons (ensure only one instance at a time, allow reopening)
-		desktopIcons.forEach(folder => {
-			let clickCount = 0;
-			let folderTitle = folder.getAttribute("data-title");
+		// desktopIcons.forEach(folder => {
+		// 	let clickCount = 0;
+		// 	let folderTitle = folder.getAttribute("data-title");
 	
-			folder.addEventListener("click", function () {
-				if (!folder.classList.contains("locked")) {
-					clickCount++;
+		// 	folder.addEventListener("click", function () {
+		// 		if (!folder.classList.contains("locked")) {
+		// 			clickCount++;
 	
-					setTimeout(() => {
-						if (clickCount === 2) {
-							if (!openedWindows.has(folderTitle)) {
-								let title = folder.getAttribute("data-title");
-								let content = folder.getAttribute("data-content");
-								let files = folder.getAttribute("data-files");
-								createWindow(title, content, files);
-								openedWindows.add(folderTitle); // Mark folder as opened
-							}
-						}
-						clickCount = 0; // Reset click count
-					}, 300);
-				}
-			});
-		});
+		// 			setTimeout(() => {
+		// 				if (clickCount === 2) {
+		// 					if (!openedWindows.has(folderTitle)) {
+		// 						let title = folder.getAttribute("data-title");
+		// 						let content = folder.getAttribute("data-content");
+		// 						let files = folder.getAttribute("data-files");
+		// 						createWindow(title, content, files);
+		// 						openedWindows.add(folderTitle); // Mark folder as opened
+		// 					}
+		// 				}
+		// 				clickCount = 0; // Reset click count
+		// 			}, 300);
+		// 		}
+		// 	});
+		// });
 
+        [...desktopIcons, ...secretFolders].forEach(folder => {
+            let folderTitle = folder.getAttribute("data-title");
+        
+            folder.addEventListener("click", function () {
+                if (!folder.classList.contains("locked") && !openedWindows.has(folderTitle)) {
+                    let title = folder.getAttribute("data-title");
+                    let content = folder.getAttribute("data-content");
+                    let files = folder.getAttribute("data-files");
+                    createWindow(title, content, files);
+                    openedWindows.add(folderTitle); // Mark folder as opened
+                }
+            });
+        });
 
 
 		
