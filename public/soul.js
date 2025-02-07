@@ -5,6 +5,7 @@
 // const socket = io(); // Automatically connects to the correct server
 
 const socket = io("https://btw-production.up.railway.app/");
+// const socket =io("http://192.168.1.228:3000")
 let signature = $("#signature");
 let toggle = $(".toggle");
 let close = $("#close");
