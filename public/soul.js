@@ -4,8 +4,8 @@
 // });
 // const socket = io(); // Automatically connects to the correct server
 
-const socket = io("https://btw-production.up.railway.app/");
-// const socket =io("http://192.168.1.228:3000")
+// const socket = io("https://btw-production.up.railway.app/");
+const socket =io("http://192.168.1.228:3000")
 let signature = $("#signature");
 let toggle = $(".toggle");
 let close = $("#close");
@@ -463,4 +463,101 @@ socket.on("updateSolvedWords", (solvedWords) => {
     makeDraggable(crosswordDiv);
 
 	
+});
+
+//off
+document.addEventListener("DOMContentLoaded", function () {
+    let specialDiv;
+    let staticDiv;
+    let inputBox;
+    let keySequence = "";
+    
+    // Detect "zz" key press
+    document.addEventListener("keydown", function (event) {
+        keySequence += event.key.toLowerCase();
+
+        if (keySequence.endsWith("zz")) {
+            openSpecialDiv();
+            keySequence = ""; // Reset key sequence
+        }
+    });
+
+    // Function to create and open the special div
+    function openSpecialDiv() {
+        // Prevent duplicate divs
+        if (document.getElementById("specialDiv")) return;
+
+        specialDiv = document.createElement("div");
+        specialDiv.id = "specialDiv";
+        specialDiv.style.position = "fixed";
+        specialDiv.style.width = "500px";
+        specialDiv.style.height = "350px";
+        specialDiv.style.backgroundColor = "black";
+        specialDiv.style.color = "limegreen";
+        specialDiv.style.fontSize = "20px";
+        specialDiv.style.display = "flex";
+        specialDiv.style.flexDirection = "column";
+        specialDiv.style.justifyContent = "center";
+        specialDiv.style.alignItems = "center";
+        specialDiv.style.top = "50%";
+        specialDiv.style.left = "50%";
+        specialDiv.style.transform = "translate(-50%, -50%)";
+        specialDiv.style.border = "3px solid limegreen";
+        specialDiv.style.zIndex = "3000";
+
+        let message = document.createElement("p");
+        message.innerText = "Enter Code:";
+        message.style.marginBottom = "10px";
+
+        inputBox = document.createElement("input");
+        inputBox.type = "text";
+        inputBox.style.width = "200px";
+        inputBox.style.height = "40px";
+        inputBox.style.backgroundColor = "black";
+        inputBox.style.color = "limegreen";
+        inputBox.style.fontSize = "18px";
+        inputBox.style.textAlign = "center";
+        inputBox.style.border = "2px solid limegreen";
+        inputBox.style.outline = "none";
+
+        specialDiv.appendChild(message);
+        specialDiv.appendChild(inputBox);
+        document.body.appendChild(specialDiv);
+
+        inputBox.focus();
+
+        // Listen for input and check for "btwoff"
+        inputBox.addEventListener("input", function () {
+            if (inputBox.value.toLowerCase() === "btwoff") {
+                openStaticDiv();
+                socket.emit("triggerStatic"); // Send event to all connected users
+            }
+        });
+    }
+
+    // Function to create and open the static fullscreen div
+    function openStaticDiv() {
+        // Prevent duplicate static divs
+        if (document.getElementById("staticDiv")) return;
+
+        staticDiv = document.createElement("div");
+        staticDiv.id = "staticDiv";
+        staticDiv.style.position = "fixed";
+        staticDiv.style.width = "100vw";
+        staticDiv.style.height = "100vh";
+        staticDiv.style.backgroundImage = "url('tv-static.gif')";
+        staticDiv.style.backgroundSize = "cover";
+        staticDiv.style.backgroundPosition = "center";
+        staticDiv.style.zIndex = "4000";
+        staticDiv.style.top = "0";
+        staticDiv.style.left = "0";
+
+        document.body.appendChild(staticDiv);
+        specialDiv.remove(); // Remove the small div when static opens
+    }
+
+    // Listen for the static event from other users
+    socket.on("triggerStatic", function () {
+        openStaticDiv();
+    });
 });
