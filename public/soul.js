@@ -380,7 +380,7 @@ function makeDraggable(el) {
 const words = [
     { id: "bored", answer: "BORED", row: 0 },
     { id: "obsession", answer: "OBSESSION", row: 1 },
-    { id: "coding", answer: "CODING", row: 2 },
+    { id: "coding", answer: "INSTINCT", row: 2 },
     { id: "lifestyle", answer: "LIFESTYLE", row: 3 },
     { id: "careful", answer: "CAREFUL", row: 4 }
 ];
