@@ -217,20 +217,19 @@ function makeDraggable(el) {
 		// 	});
 		// });
 
-        [...desktopIcons, ...secretFolders].forEach(folder => {
-            let folderTitle = folder.getAttribute("data-title");
+        desktopIcons.forEach(icon => {
+            let folderTitle = icon.getAttribute("data-title");
         
-            folder.addEventListener("click", function () {
-                if (!folder.classList.contains("locked") && !openedWindows.has(folderTitle)) {
-                    let title = folder.getAttribute("data-title");
-                    let content = folder.getAttribute("data-content");
-                    let files = folder.getAttribute("data-files");
+            icon.addEventListener("click", function () {
+                if (!openedWindows.has(folderTitle)) {
+                    let title = icon.getAttribute("data-title");
+                    let content = icon.getAttribute("data-content");
+                    let files = icon.getAttribute("data-files");
                     createWindow(title, content, files);
                     openedWindows.add(folderTitle); // Mark folder as opened
                 }
             });
         });
-
 
 		
 
@@ -245,28 +244,36 @@ function makeDraggable(el) {
 
     // Function to check if the full word is entered correctly before unlocking
     function checkWordCompletion(rowIndex) {
-        let inputField = document.querySelector(`.crossword-row input[data-row="${rowIndex}"]`);
-        let expectedAnswer = inputField.dataset.answer.toUpperCase();
-        let userAnswer = inputField.value.toUpperCase();
-    
+        let rowTiles = document.querySelectorAll(`.crossword-row input[data-row="${rowIndex}"]`);
+        let expectedAnswer = Array.from(rowTiles).map(t => t.dataset.answer.toUpperCase()).join("");
+        let userAnswer = Array.from(rowTiles).map(t => t.value.toUpperCase()).join("");
+
+        // Ensure the user has filled out all letters before checking
+        let allFilled = Array.from(rowTiles).every(tile => tile.value.length > 0);
         let folderToUnlock = document.querySelector(`#secrets .icon[data-row="${rowIndex}"]`);
-    
-        if (userAnswer === expectedAnswer) {
+
+        if (allFilled && userAnswer === expectedAnswer) {
             // Unlock folder
             folderToUnlock.classList.remove("locked");
             folderToUnlock.classList.add("unlocked");
             folderToUnlock.style.opacity = "1";
-            folderToUnlock.style.pointerEvents = "auto"; // Enable clicking
-    
+            folderToUnlock.style.pointerEvents = "auto";
+
             // Show unlock notification
             let folderTitle = folderToUnlock.getAttribute("data-title");
             showUnlockNotification(`Folder "${folderTitle}" is now unlocked!`);
+
+            // Auto-focus on the next crossword row
+            let nextRowTiles = document.querySelectorAll(`.crossword-row input[data-row="${parseInt(rowIndex) + 1}"]`);
+            if (nextRowTiles.length > 0) {
+                nextRowTiles[0].focus();
+            }
         } else {
-            // Keep it locked if the answer is incorrect or deleted
+            // Lock the folder again if word is incomplete or incorrect
             folderToUnlock.classList.add("locked");
             folderToUnlock.classList.remove("unlocked");
             folderToUnlock.style.opacity = "0.5";
-            folderToUnlock.style.pointerEvents = "none"; // Disable clicking
+            folderToUnlock.style.pointerEvents = "none";
         }
     }
 
@@ -373,26 +380,40 @@ socket.on("updateSolvedWords", (solvedWords) => {
 });
 
     // Ensure secret folders require a double-click and can only be opened once
+    // secretFolders.forEach(folder => {
+    //     let clickCount = 0;
+    //     let folderTitle = folder.getAttribute("data-title");
+
+    //     folder.addEventListener("click", function () {
+    //         if (!folder.classList.contains("locked")) {
+    //             clickCount++;
+
+    //             setTimeout(() => {
+    //                 if (clickCount === 2) {
+    //                     if (!openedWindows.has(folderTitle)) {
+    //                         let title = folder.getAttribute("data-title");
+    //                         let content = folder.getAttribute("data-content");
+    //                         let files = folder.getAttribute("data-files");
+    //                         createWindow(title, content, files);
+    //                         openedWindows.add(folderTitle); // Mark folder as opened
+    //                     }
+    //                 }
+    //                 clickCount = 0; // Reset click count
+    //             }, 300);
+    //         }
+    //     });
+    // });
+
     secretFolders.forEach(folder => {
-        let clickCount = 0;
         let folderTitle = folder.getAttribute("data-title");
-
+    
         folder.addEventListener("click", function () {
-            if (!folder.classList.contains("locked")) {
-                clickCount++;
-
-                setTimeout(() => {
-                    if (clickCount === 2) {
-                        if (!openedWindows.has(folderTitle)) {
-                            let title = folder.getAttribute("data-title");
-                            let content = folder.getAttribute("data-content");
-                            let files = folder.getAttribute("data-files");
-                            createWindow(title, content, files);
-                            openedWindows.add(folderTitle); // Mark folder as opened
-                        }
-                    }
-                    clickCount = 0; // Reset click count
-                }, 300);
+            if (!folder.classList.contains("locked") && !openedWindows.has(folderTitle)) {
+                let title = folder.getAttribute("data-title");
+                let content = folder.getAttribute("data-content");
+                let files = folder.getAttribute("data-files");
+                createWindow(title, content, files);
+                openedWindows.add(folderTitle); // Mark folder as opened
             }
         });
     });
