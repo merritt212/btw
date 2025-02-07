@@ -146,47 +146,43 @@ function makeDraggable(el) {
     function createWindow(title, content, files) {
         let windowDiv = document.createElement("div");
         windowDiv.classList.add("desktop-window");
-
-        // Convert file list JSON into HTML list
-        let fileList = JSON.parse(files).map(file => `
-            <li data-description="${file.description}">
-                <img src="${file.icon}" alt="${file.name}">
-                <span>${file.name}</span>
-            </li>
-        `).join("");
-
+    
+        // Convert file list JSON into an image or a list of items
+        let fileList = JSON.parse(files).map(file => {
+            if (file.icon.endsWith(".jpg") || file.icon.endsWith(".png") || file.icon.endsWith(".jpeg") || file.icon.endsWith(".gif")) {
+                // 📸 Show image full width inside the window
+                return `<img src="${file.icon}" alt="${file.name}" style="width: 100%; height: auto; display: block;">`;
+            } else {
+                // 🗂️ Default list item for non-image files
+                return `<li data-description="${file.description}">
+                            <img src="${file.icon}" alt="${file.name}">
+                            <span>${file.name}</span>
+                        </li>`;
+            }
+        }).join("");
+    
         windowDiv.innerHTML = `
             <div class="window-header">${title} <span class="close-btn">✖</span></div>
             <div class="window-content">${content}</div>
-            <ul class="window-menu">${fileList}</ul>
+            <div class="window-menu">${fileList}</div>
             <div class="window-footer"></div>
         `;
-
+    
         // Position randomly on screen
         windowDiv.style.position = "absolute";
         windowDiv.style.top = Math.random() * 300 + "px";
         windowDiv.style.left = Math.random() * 500 + "px";
-
+    
         document.body.appendChild(windowDiv);
         openWindows.push(windowDiv);
         makeDraggable(windowDiv);
         bringToFront(windowDiv);
-
+    
         // Close window event
         windowDiv.querySelector(".close-btn").addEventListener("click", function () {
             windowDiv.remove();
             openWindows = openWindows.filter(win => win !== windowDiv);
             openedWindows.delete(title); // Allow reopening after window is closed
-        });
-
-        // Handle file clicks
-        let menuItems = windowDiv.querySelectorAll(".window-menu li");
-        menuItems.forEach(item => {
-            item.addEventListener("click", function () {
-                let footer = windowDiv.querySelector(".window-footer");
-                footer.innerHTML = `<p>${item.getAttribute("data-description")}</p>`;
-                footer.style.display = "block";
-            });
         });
     }
 
