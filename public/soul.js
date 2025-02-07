@@ -245,36 +245,28 @@ function makeDraggable(el) {
 
     // Function to check if the full word is entered correctly before unlocking
     function checkWordCompletion(rowIndex) {
-        let rowTiles = document.querySelectorAll(`.crossword-row input[data-row="${rowIndex}"]`);
-        let expectedAnswer = Array.from(rowTiles).map(t => t.dataset.answer.toUpperCase()).join("");
-        let userAnswer = Array.from(rowTiles).map(t => t.value.toUpperCase()).join("");
-
-        // Ensure the user has filled out all letters before checking
-        let allFilled = Array.from(rowTiles).every(tile => tile.value.length > 0);
+        let inputField = document.querySelector(`.crossword-row input[data-row="${rowIndex}"]`);
+        let expectedAnswer = inputField.dataset.answer.toUpperCase();
+        let userAnswer = inputField.value.toUpperCase();
+    
         let folderToUnlock = document.querySelector(`#secrets .icon[data-row="${rowIndex}"]`);
-
-        if (allFilled && userAnswer === expectedAnswer) {
+    
+        if (userAnswer === expectedAnswer) {
             // Unlock folder
             folderToUnlock.classList.remove("locked");
             folderToUnlock.classList.add("unlocked");
             folderToUnlock.style.opacity = "1";
-            folderToUnlock.style.pointerEvents = "auto";
-
+            folderToUnlock.style.pointerEvents = "auto"; // Enable clicking
+    
             // Show unlock notification
             let folderTitle = folderToUnlock.getAttribute("data-title");
             showUnlockNotification(`Folder "${folderTitle}" is now unlocked!`);
-
-            // Auto-focus on the next crossword row
-            let nextRowTiles = document.querySelectorAll(`.crossword-row input[data-row="${parseInt(rowIndex) + 1}"]`);
-            if (nextRowTiles.length > 0) {
-                nextRowTiles[0].focus();
-            }
         } else {
-            // Lock the folder again if word is incomplete or incorrect
+            // Keep it locked if the answer is incorrect or deleted
             folderToUnlock.classList.add("locked");
             folderToUnlock.classList.remove("unlocked");
             folderToUnlock.style.opacity = "0.5";
-            folderToUnlock.style.pointerEvents = "none";
+            folderToUnlock.style.pointerEvents = "none"; // Disable clicking
         }
     }
 
